@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.models import ConflictLog, Hall, SeatHold, Showtime
+from app.models.models import ConflictLog, Hall, SeatHold, Showtime, VipZone
 
 
 def seed_if_empty(db: Session) -> None:
@@ -24,6 +24,14 @@ def seed_if_empty(db: Session) -> None:
             SeatHold(showtime_id=s1.id, order_code="SB-1001", row=3, start_col=2, end_col=4, party_size=3),
             SeatHold(showtime_id=s1.id, order_code="SB-1002", row=5, start_col=7, end_col=9, party_size=3),
             SeatHold(showtime_id=s3.id, order_code="SB-1003", row=2, start_col=1, end_col=2, party_size=2),
+        ]
+    )
+    # VIP 区间按排登记：第1排 1-4（仅4座，5人 VIP 需求必败；关需求走普通区 7-11）；
+    # 第6排 3-8 跨过道列 5、6，实际被切成 3-4 / 7-8 两段。
+    db.add_all(
+        [
+            VipZone(hall_id=h1.id, row=1, start_col=1, end_col=4),
+            VipZone(hall_id=h1.id, row=6, start_col=3, end_col=8),
         ]
     )
     db.add(ConflictLog(showtime_id=s1.id, party_size=4, reason="与既有持座重叠：第3排 2-4"))

@@ -276,3 +276,69 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   box-shadow: inset 0 -3px 0 #a83828, 0 0 8px rgba(232, 93, 76, .35);
 }
 .seat.aisle { background: var(--aisle); opacity: .3; }
+
+/* —— VIP 区间描边 —— */
+.seat.vip {
+  outline: 2px solid var(--cinema-gold);
+  outline-offset: -2px;
+  box-shadow: inset 0 -3px 0 #152840, 0 0 6px rgba(232, 196, 106, .35);
+}
+.seat.vip-occ {
+  outline: 2px solid var(--cinema-gold);
+  outline-offset: -2px;
+}
+.seat-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .72rem;
+  color: var(--cinema-muted);
+  margin-left: auto;
+}
+.seat-legend .lg {
+  width: 12px; height: 12px;
+  border-radius: 3px 3px 4px 4px;
+  display: inline-block;
+  margin: 0 .15rem 0 .5rem;
+}
+.lg-free { background: var(--free); }
+.lg-vip { background: var(--free); outline: 2px solid var(--cinema-gold); outline-offset: -2px; }
+.lg-occ { background: var(--hot); }
+.lg-aisle { background: var(--aisle); opacity: .5; }
+
+.vip-tag {
+  color: var(--cinema-gold);
+  border: 1px solid var(--cinema-gold);
+  border-radius: 3px;
+  padding: 0 .35rem;
+  font-size: .72rem;
+  font-family: "IBM Plex Mono", monospace;
+}
+.vip-toggle { display: inline-flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.vip-toggle input { width: auto; accent-color: var(--cinema-gold); }
+.vip-hint { font-size: .74rem; color: var(--cinema-muted); margin: 0 0 .6rem; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--cinema-gold);
+  border: 1px solid #5a4030;
+  font-weight: 600;
+  padding: .3rem .55rem;
+}
+.vip-edit-row td { background: rgba(232, 196, 106, .05); }
+.vip-edit { padding: .5rem .25rem; display: flex; flex-direction: column; gap: .5rem; }
+.vip-edit-head { color: var(--cinema-gold); font-size: .82rem; }
+.vip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid #6a5430;
+  border-radius: 4px;
+  padding: .2rem .5rem;
+  margin: 0 .5rem .25rem 0;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .8rem;
+  color: var(--cinema-paper);
+}
+.chip-del { padding: 0 .4rem; line-height: 1; }
+.vip-add { margin: .15rem 0 0; }

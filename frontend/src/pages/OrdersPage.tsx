@@ -9,6 +9,7 @@ type Hold = {
   start_col: number;
   end_col: number;
   party_size: number;
+  vip_request: boolean;
   status: string;
 };
 
@@ -27,6 +28,7 @@ export default function OrdersPage() {
             <th>场次</th>
             <th>座位</th>
             <th>人数</th>
+            <th>类型</th>
             <th>状态</th>
           </tr>
         </thead>
@@ -39,6 +41,7 @@ export default function OrdersPage() {
                 R{h.row} C{h.start_col}-{h.end_col}
               </td>
               <td>{h.party_size}</td>
+              <td>{h.vip_request ? <span className="vip-tag">VIP</span> : "普通"}</td>
               <td>{h.status}</td>
             </tr>
           ))}

@@ -9,6 +9,7 @@ type Hold = {
   start_col: number;
   end_col: number;
   party_size: number;
+  is_vip: boolean;
 };
 
 export default function HoldPage() {
@@ -16,6 +17,7 @@ export default function HoldPage() {
   const [sid, setSid] = useState<number | "">("");
   const [party, setParty] = useState(3);
   const [prefRow, setPrefRow] = useState("");
+  const [requireVip, setRequireVip] = useState(false);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [last, setLast] = useState<Hold | null>(null);
@@ -31,11 +33,17 @@ export default function HoldPage() {
     setMsg("");
     setErr("");
     try {
-      const body: Record<string, unknown> = { showtime_id: sid, party_size: party };
+      const body: Record<string, unknown> = {
+        showtime_id: sid,
+        party_size: party,
+        require_vip: requireVip,
+      };
       if (prefRow) body.preferred_row = Number(prefRow);
       const hold = await api<Hold>("/holds", { method: "POST", body: JSON.stringify(body) });
       setLast(hold);
-      setMsg(`已锁座 ${hold.order_code}：第${hold.row}排 ${hold.start_col}-${hold.end_col}`);
+      setMsg(
+        `已锁${requireVip ? "VIP" : "普通"}连座 ${hold.order_code}：第${hold.row}排 ${hold.start_col}-${hold.end_col}`
+      );
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
     }
@@ -72,13 +80,28 @@ export default function HoldPage() {
             style={{ width: 72 }}
           />
         </label>
+        <label className="vip-toggle">
+          <input
+            type="checkbox"
+            checked={requireVip}
+            onChange={(e) => setRequireVip(e.target.checked)}
+            style={{ width: "auto" }}
+          />
+          VIP需求（只在VIP区间内找连座）
+        </label>
         <button onClick={submit}>查找并锁连座</button>
       </div>
+      <p className="vip-hint">
+        {requireVip
+          ? "已开启VIP需求：连座必须全部落在VIP区间内，区间跨过道仍会被过道切段，不会拼入区间外普通座。"
+          : "未开VIP需求：只在普通区搜索连座，不会占用VIP区间格子。"}
+      </p>
       {msg && <div className="ok">{msg}</div>}
       {err && <div className="err">{err}</div>}
       {last && (
         <p className="mono">
           订单 {last.order_code} · {last.party_size} 人 · R{last.row} C{last.start_col}-{last.end_col}
+          {last.is_vip ? " · VIP" : ""}
         </p>
       )}
     </>

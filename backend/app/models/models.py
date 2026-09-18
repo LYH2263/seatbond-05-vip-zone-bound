@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -14,6 +14,22 @@ class Hall(Base):
     cols: Mapped[int] = mapped_column(Integer)
     aisle_cols: Mapped[str] = mapped_column(String(80), default="")  # comma-separated
     showtimes: Mapped[list["Showtime"]] = relationship(back_populates="hall")
+    vip_zones: Mapped[list["VipZone"]] = relationship(cascade="all, delete-orphan")
+
+
+class VipZone(Base):
+    """VIP column interval on one row of a hall (inclusive start_col..end_col).
+
+    A zone may span aisle columns; aisles still break contiguous runs inside it.
+    """
+
+    __tablename__ = "vip_zones"
+    __table_args__ = (UniqueConstraint("hall_id", "row", "start_col", "end_col", name="uq_vip_zone"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    hall_id: Mapped[int] = mapped_column(ForeignKey("halls.id"))
+    row: Mapped[int] = mapped_column(Integer)
+    start_col: Mapped[int] = mapped_column(Integer)
+    end_col: Mapped[int] = mapped_column(Integer)
 
 
 class Showtime(Base):
@@ -37,6 +53,7 @@ class SeatHold(Base):
     end_col: Mapped[int] = mapped_column(Integer)
     party_size: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20), default="held")
+    is_vip: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     showtime: Mapped[Showtime] = relationship(back_populates="holds")
 

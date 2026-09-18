@@ -1,5 +1,30 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+
+class VipZoneIn(BaseModel):
+    row: int = Field(ge=1)
+    start_col: int = Field(ge=1)
+    end_col: int = Field(ge=1)
+
+    @model_validator(mode="after")
+    def _check_span(self):
+        if self.end_col < self.start_col:
+            raise ValueError("VIP区间止列不能小于起列")
+        return self
+
+
+class VipZoneOut(BaseModel):
+    id: int
+    hall_id: int
+    row: int
+    start_col: int
+    end_col: int
+    model_config = {"from_attributes": True}
+
+
+class VipZonesUpdate(BaseModel):
+    zones: list[VipZoneIn]
 
 
 class HallOut(BaseModel):
@@ -8,6 +33,7 @@ class HallOut(BaseModel):
     rows: int
     cols: int
     aisle_cols: list[int]
+    vip_zones: list[VipZoneOut] = []
     model_config = {"from_attributes": True}
 
 
@@ -29,6 +55,7 @@ class HoldOut(BaseModel):
     end_col: int
     party_size: int
     status: str
+    is_vip: bool = False
     model_config = {"from_attributes": True}
 
 
@@ -36,6 +63,7 @@ class HoldRequest(BaseModel):
     showtime_id: int
     party_size: int = Field(ge=1, le=12)
     preferred_row: int | None = None
+    require_vip: bool = False
 
 
 class ConflictOut(BaseModel):
@@ -51,6 +79,7 @@ class SeatMapCell(BaseModel):
     row: int
     col: int
     is_aisle: bool
+    is_vip: bool = False
     occupied: bool
     heat: float
 

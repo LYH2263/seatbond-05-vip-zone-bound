@@ -57,10 +57,20 @@ def find_contiguous_block(
     holds: list[HoldSpan],
     row: int,
     party_size: int,
+    allowed_cols: set[int] | None = None,
 ) -> HoldSpan | None:
-    """Find leftmost contiguous empty seats of party_size in a row."""
+    """Find leftmost contiguous empty seats of party_size in a row.
+
+    When ``allowed_cols`` is given, only those columns are eligible: a VIP
+    request restricts the search to VIP intervals, while a regular request
+    excludes VIP columns. Aisles still break runs, and an excluded column
+    sitting between eligible ones breaks the run too — seats on opposite
+    sides of a VIP cell must never be bonded together.
+    """
     if party_size <= 0:
         return None
+    if allowed_cols is not None:
+        row_cells = [c for c in row_cells if c.col in allowed_cols]
     taken = occupied_cols(holds, row)
     for start, end in contiguous_runs(row_cells):
         free = [c for c in range(start, end + 1) if c not in taken]
@@ -84,12 +94,36 @@ def find_bond_across_rows(
     seats_by_row: dict[int, list[SeatCell]],
     holds: list[HoldSpan],
     party_size: int,
+    allowed_cols_by_row: dict[int, set[int]] | None = None,
 ) -> HoldSpan | None:
     for row in sorted(seats_by_row.keys()):
-        block = find_contiguous_block(seats_by_row[row], holds, row, party_size)
+        allowed = allowed_cols_by_row.get(row) if allowed_cols_by_row is not None else None
+        block = find_contiguous_block(seats_by_row[row], holds, row, party_size, allowed)
         if block is not None:
             return block
     return None
+
+
+def vip_cols_by_row(
+    zones: list[tuple[int, int, int]], rows: int
+) -> dict[int, set[int]]:
+    """Expand (row, start_col, end_col) VIP zones into per-row column sets."""
+    out: dict[int, set[int]] = {r: set() for r in range(1, rows + 1)}
+    for row, start, end in zones:
+        out.setdefault(row, set()).update(range(start, end + 1))
+    return out
+
+
+def regular_cols_by_row(
+    seats_by_row: dict[int, list[SeatCell]],
+    vip_by_row: dict[int, set[int]],
+) -> dict[int, set[int]]:
+    """Columns a non-VIP request may use: real seats outside VIP intervals."""
+    out: dict[int, set[int]] = {}
+    for row, cells in seats_by_row.items():
+        seat_cols = {c.col for c in cells if not c.is_aisle}
+        out[row] = seat_cols - vip_by_row.get(row, set())
+    return out
 
 
 def conflicts_with(existing: list[HoldSpan], candidate: HoldSpan) -> list[HoldSpan]:

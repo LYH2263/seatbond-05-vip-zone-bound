@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../api/client";
 
 type Show = { id: number; film_title: string; hall_name?: string };
-type Cell = { row: number; col: number; is_aisle: boolean; occupied: boolean; heat: number };
+type Cell = { row: number; col: number; is_aisle: boolean; is_vip: boolean; occupied: boolean; heat: number };
 type MapOut = { showtime_id: number; hall_name: string; rows: number; cols: number; cells: Cell[] };
 
 export default function SeatMapPage() {
@@ -45,6 +45,9 @@ export default function SeatMapPage() {
             {map.hall_name} · {map.rows}×{map.cols} · 热力座图
           </span>
         )}
+        <span className="vip-legend">
+          <span className="vip-swatch" /> VIP区间描边
+        </span>
       </div>
       <div className="screen">银 幕</div>
       {map && (
@@ -52,8 +55,10 @@ export default function SeatMapPage() {
           {map.cells.map((c) => (
             <div
               key={`${c.row}-${c.col}`}
-              className={`seat ${c.is_aisle ? "aisle" : c.occupied ? "occ" : "free"}`}
-              title={`R${c.row}C${c.col}`}
+              className={`seat ${c.is_aisle ? "aisle" : c.occupied ? "occ" : "free"}${
+                c.is_vip ? " vip" : ""
+              }`}
+              title={`R${c.row}C${c.col}${c.is_vip ? " · VIP" : ""}`}
               style={
                 !c.is_aisle && c.heat
                   ? { boxShadow: `inset 0 0 0 1px rgba(255,180,80,${Math.min(0.9, c.heat / 10)})` }
